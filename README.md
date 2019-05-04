@@ -1,0 +1,2 @@
+# EdwardDa
+Django Learning Project
