@@ -119,3 +119,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+
+
+EMAIL_PORT = 465
+EMAIL_USE_TLS = True   #是否使用TLS安全传输协议
+EMAIL_HOST = 'smtp.qq.com'
+EMAIL_HOST_USER = 'yourqq@qq.com'
+EMAIL_HOST_PASSWORD = 'yourpassword'
+
