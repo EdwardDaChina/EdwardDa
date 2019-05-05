@@ -123,10 +123,10 @@ STATIC_URL = '/static/'
 
 
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_PORT = 25
+
+EMAIL_PORT = 465
 EMAIL_USE_TLS = True   #是否使用TLS安全传输协议
 EMAIL_HOST = 'smtp.qq.com'
 EMAIL_HOST_USER = '1002366833@qq.com'
-EMAIL_HOST_PASSWORD = 'dqbysh11'
-DEFAULT_FROM_EMAIL = '1002366833@qq.com'
+EMAIL_HOST_PASSWORD = 'fizeajjcnowrbddj'
+
