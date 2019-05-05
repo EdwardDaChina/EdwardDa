@@ -4,15 +4,31 @@
 
 
 from django.shortcuts import render, get_object_or_404
-from .models import Post
+from .models import Post, Comment
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic import ListView
-from .forms import EmailPostForm
+from .forms import EmailPostForm, CommentForm
 
 
 def post_share(request, post_id):
     # 通过id 获取 post 对象
     post = get_object_or_404(Post, id=post_id, status='published')
+    # 列出文章对应的所有活动的评论
+    comments = post.comments.filter(active=True)
+
+    new_comment = None
+
+    if request.method == "POST":
+        comment_form = CommentForm(data=request.POST)
+        if comment_form.is_valid():
+            # 通过表单直接创建新数据对象，但是不要保存到数据库中
+            new_comment = comment_form.save(commit=False)
+            # 设置外键为当前文章
+            new_comment.post = post
+            # 将评论数据对象写入数据库
+            new_comment.save()
+    else:
+        comment_form = CommentForm()
     sent = False
     if request.method == "POST":
         # 表单被提交
@@ -29,7 +45,7 @@ def post_share(request, post_id):
             # 发送邮件......
     else:
         form = EmailPostForm()
-    return render(request, 'blog/post/share.html', {'post': post, 'form': form, 'sent': sent})
+    return render(request, 'blog/post/share.html', {'post': post, 'form': form, 'sent': sent, 'comments': comments, 'new_comment': new_comment, 'comment_form': comment_form})
 
 
 class PostListView(ListView):  # 内置CBV类 列出任意类型的数据
