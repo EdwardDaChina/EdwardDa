@@ -86,5 +86,13 @@ def post_list(request, tag_slug=None):
     return render(request, 'blog/post/list.html', {'page': page, 'posts': posts, 'tag': tag})
 
 
+def search(request):
+    q = request.GET.get('q')
+    error_msg = ''
 
+    if not q:
+        error_msg = '请输入关键词'
+        return render(request, 'blog/errors.html', {'error_msg': error_msg})
+    post_list = Post.objects.filter(title__icontains=q)
+    return render(request, 'blog/results.html', {'error_msg': error_msg, 'post_list': post_list})
 
