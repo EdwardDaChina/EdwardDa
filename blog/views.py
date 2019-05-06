@@ -9,18 +9,12 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic import ListView
 from .forms import EmailPostForm, CommentForm
 from taggit.models import Tag
-
+from django.db.models import Count
 
 
 def post_detail(request, year, month, day, post):
     post = get_object_or_404(Post, slug=post, status="published", publish__year=year, publish__month=month,
                              publish__day=day)
-    return render(request, 'blog/post/detail.html', {'post': post})
-
-
-def post_share(request, post_id):
-    # 通过id 获取 post 对象
-    post = get_object_or_404(Post, id=post_id, status='published')
     # 列出文章对应的所有活动的评论
     comments = post.comments.filter(active=True)
 
@@ -37,7 +31,17 @@ def post_share(request, post_id):
             new_comment.save()
     else:
         comment_form = CommentForm()
+    post_tags_ids = post.tags.values_list('id', flat=True)
+    similar_tags = Post.published.filter(tags__in=post_tags_ids).exclude(id=post.id)
+    similar_posts = similar_tags.annotate(same_tags=Count('tags')).order_by('-same_tags', '-publish')[:4]
+    return render(request, 'blog/post/detail.html', {'post': post, 'comments': comments, 'new_comment': new_comment, 'comment_form': comment_form, 'similar_posts': similar_posts})
+
+
+def post_share(request, post_id):
+    # 通过id 获取 post 对象
+    post = get_object_or_404(Post, id=post_id, status='published')
     sent = False
+
     if request.method == "POST":
         # 表单被提交
         form = EmailPostForm(request.POST)
@@ -53,7 +57,7 @@ def post_share(request, post_id):
             # 发送邮件......
     else:
         form = EmailPostForm()
-    return render(request, 'blog/post/share.html', {'post': post, 'form': form, 'sent': sent, 'comments': comments, 'new_comment': new_comment, 'comment_form': comment_form})
+    return render(request, 'blog/post/share.html', {'post': post, 'form': form, 'sent': sent})
 
 
 class PostListView(ListView):  # 内置CBV类 列出任意类型的数据
