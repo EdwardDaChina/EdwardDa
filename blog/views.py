@@ -8,6 +8,8 @@ from .models import Post, Comment
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic import ListView
 from .forms import EmailPostForm, CommentForm
+from taggit.models import Tag
+
 
 
 def post_detail(request, year, month, day, post):
@@ -61,7 +63,11 @@ class PostListView(ListView):  # 内置CBV类 列出任意类型的数据
     template_name = 'blog/post/list.html'
 
 
-def post_list(request):
+def post_list(request, tag_slug=None):
+    tag = None
+    if tag_slug:
+        tag = get_object_or_404(Tag, slug=tag_slug)
+        object_list = object_list.filter(tags__in=[tag])
     object_list = Post.published.all()
     paginator = Paginator(object_list, 3)  # 每页显示3篇文章
     page = request.GET.get('page')
@@ -73,7 +79,7 @@ def post_list(request):
     except EmptyPage:
         # 如果页数超出总页数就返回最后一页
         posts = paginator.page(paginator.num_pages)
-    return render(request, 'blog/post/list.html', {'page': page,'posts': posts})
+    return render(request, 'blog/post/list.html', {'page': page, 'posts': posts, 'tag': tag})
 
 
 
